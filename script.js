@@ -1,5 +1,3 @@
-/* INIT ---------------------------------------------------------------------------------------------------------------------------- */
-
 // Elementi della pagina
 const homePage = document.getElementById("home-page");
 const chatPage = document.getElementById("chat-page");
@@ -8,32 +6,8 @@ const noteContainer = document.getElementById("note-container");
 const addChatButton = document.getElementById("add-chat");
 const backButton = document.getElementById("back-button");
 const chatTitle = document.getElementById("chat-title");
-
-
 // Variabile globale per tracciare la chat corrente
 let currentChatName = "";
-
-// Configurazione IndexedDB
-const dbName = "musicNotesApp";
-let db;
-
-const request = indexedDB.open(dbName, 1);
-
-request.onerror = function (event) {
-  console.log("Errore nell'aprire il database IndexedDB:", event);
-};
-
-request.onsuccess = function (event) {
-  db = event.target.result;
-  loadChats(); // Carica le chat appena il database è pronto
-};
-
-request.onupgradeneeded = function (event) {
-  db = event.target.result;
-  if (!db.objectStoreNames.contains("chats")) {
-    db.createObjectStore("chats", { keyPath: "name" });
-  }
-};
 
 /* HOME PAGE & CHAT PAGE ---------------------------------------------------------------------------------------------------------- */
 
@@ -60,104 +34,75 @@ backButton.addEventListener("click", () => {
   homePage.style.display = "block";
 });
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // Aggiungere una nuova chat
 addChatButton.addEventListener("click", () => {
   const chatName = prompt("Inserisci il nome della chat:");
-  if (!chatName) {
-    return; // Interrompe l'esecuzione se il nome della chat non è stato inserito
-  }
+  if (!chatName) return; // Interrompe l'esecuzione se il nome della chat non è stato inserito
 
   const artistName = prompt("Di chi è la canzone:");
-  if (!artistName) {
-    return; // Interrompe l'esecuzione se il nome dell'artista non è stato inserito
-  }
+  if (!artistName) return; // Interrompe l'esecuzione se il nome dell'artista non è stato inserito
 
-  // Creazione dell'elemento chat solo se entrambi i campi sono compilati
-
-  const opt = document.createElement("div");
-  opt.classList.add("opt");
-  opt.innerHTML = ` 
-      <button class="opt" data-title="Nome della Canzone" onclick="apriMenu()"><i class="fa-solid fa-ellipsis"></i></button>
-  `;
-
-  // Impedire la propagazione dell'evento di click
-  opt.querySelector(".opt").addEventListener("click", (event) => {
-    event.stopPropagation(); // Fermiamo l'evento, così non si propagherà
-    /*  openHomeMenu(); */
-  });
-
-  const foto = document.createElement("div");
-  foto.classList.add("foto");
-  foto.innerHTML = ` 
-<input type="file" id="file-input" class="foto" accept="image/*" onchange="previewImage(event)" />
-  `;
-
-  // Impedire la propagazione dell'evento di click
-  foto.querySelector(".foto").addEventListener("click", (event) => {
-    event.stopPropagation(); // Fermiamo l'evento, così non si propagherà
-    /*  openHomeMenu(); */
-  });
-
+  // Creazione dell'elemento chat
   const chatItem = document.createElement("div");
   chatItem.classList.add("chat-item");
-  chatItem.innerHTML = ` 
-  <div style="display: flex; flex-direction: column;">
-      <span>${chatName}</span>
-      <span>${artistName}</span>
-    </div>
+  chatItem.style.position = "relative"; // Per posizionare meglio gli elementi
+  chatItem.style.marginTop = "25px"; // Sposta il contenuto più in basso
+  chatItem.addEventListener("click", () => openChat(chatName));
 
+  // Creazione del contenitore per il nome della canzone e l'artista
+  const textContainer = document.createElement("div");
+  textContainer.style.display = "flex";
+  textContainer.style.flexDirection = "column";
+  textContainer.style.position = "absolute";
+  textContainer.style.left = "85px"; // Mantiene la posizione originale
+  textContainer.innerHTML = `
+      <span>${chatName}</span>
+      <span class="artist-name">${artistName}</span>
   `;
 
-  // Aggiungiamo l'evento per aprire la chat quando viene cliccata
-  chatItem.addEventListener("click", () => openChat(chatName));
-  chatList.appendChild(chatItem); // Aggiungiamo la chat alla lista delle chat
+  // Creazione dei tre puntini (opzioni)
+  const opt = document.createElement("button");
+  opt.classList.add("opt");
+  opt.setAttribute("data-title", chatName);
+  opt.innerHTML = `<i class="fa-solid fa-ellipsis"></i>`;
+  opt.style.position = "absolute";
+  opt.style.right = "0px";
+  opt.style.top = "50%";
+  opt.style.transform = "translateY(-50%)";
+  opt.addEventListener("click", (event) => {
+    event.stopPropagation();
+    apriMenu();
+  });
+
+  // Creazione dell'input file (quadrato rosso)
+  const foto = document.createElement("input");
+  foto.type = "file";
+  foto.id = "file-input";
+  foto.classList.add("foto");
+  foto.accept = "image/*";
+  foto.style.position = "absolute";
+  foto.style.left = "15px";
+  foto.style.top = "50%";
+  foto.style.transform = "translateY(-50%)";
+  foto.addEventListener("change", previewImage);
+  foto.addEventListener("click", (event) => event.stopPropagation());
+
+  // Appendere gli elementi in ordine corretto
+  chatItem.appendChild(foto);
+  chatItem.appendChild(textContainer);
+  chatItem.appendChild(opt);
+  chatList.appendChild(chatItem);
 
   // Crea la chat vuota e salva
   const newChat = {
     name: chatName,
-    artist: artistName, // Salviamo anche l'artista
+    artist: artistName,
     notes: [{ title: "Titolo iniziale", text: "Testo iniziale" }]
   };
 
   saveChat(newChat);
-  openChat(chatName)
-    ;
+  openChat(chatName);
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Aggiungere un nuovo blocco di note
 function addNoteBlock(title = "Titolo...", text = "Testo...") {
@@ -269,108 +214,205 @@ function addNoteBlock(title = "Titolo...", text = "Testo...") {
   }
 
   /* ----------------------------------------------------------------------------------------------------------------------------- */
+  // Variabile globale per tenere traccia dell'audio in riproduzione
+let currentAudio = null;
 
-  const rec = document.createElement("div");
-  rec.classList.add("rec");
+// Creazione dell'elemento per la registrazione
+const rec = document.createElement("div");
+rec.classList.add("rec");
+noteBlock.appendChild(rec);
 
-  rec.innerHTML = `
-<div class="contai2"></div>
-`;
-  noteBlock.appendChild(rec);
+let isRecording = false;
+let isTriangle = false;
+let recorder;
+let audioContext;
+let isDoubleClick = false;
+let preventNextClick = false;
+let isCanceling = false;
 
-  let isRecording = false;
-  let isTriangle = false;
-  let recorder;
-  let audioContext;
+const startEvent = "ontouchstart" in window ? "touchstart" : "click";
 
-  // Gestione eventi per desktop e mobile
-  const startEvent = "ontouchstart" in window ? "touchstart" : "click";
-
-  rec.addEventListener(startEvent, () => {
-    if (!isTriangle) {
-      if (!isRecording) {
-        checkMicrophonePermission().then((hasPermission) => {
-          if (hasPermission) {
-            startRecording();
-          } else {
-            alert("Devi consentire l'accesso al microfono per registrare.");
-          }
-        });
-      } else {
-        stopRecording();
-      }
-    }
-  });
-
-  rec.addEventListener("mousedown", () => {
-    if (isTriangle) {
-      setTimeout(() => {
-        if (rec.matches(":active")) {
-          const confirmDelete = confirm("Vuoi cancellare la registrazione?");
-          if (confirmDelete) {
-            resetButton();
-          }
+// Gestione evento di partenza per registrare
+rec.addEventListener(startEvent, () => {
+  if (!isTriangle) {
+    if (!isRecording) {
+      checkMicrophonePermission().then((hasPermission) => {
+        if (hasPermission) {
+          startRecording();
+          rec.classList.add("lampeggia");
+        } else {
+          alert("Devi consentire l'accesso al microfono per registrare.");
         }
-      }, 1000);
+      });
+    } else {
+      stopRecording();
     }
+  }
+});
+
+// Gestione del doppio click / long press per cancellare la registrazione
+let pressTimer;
+let wasLongPress = false; // Flag per sapere se è stato un long press
+
+rec.addEventListener("touchstart", (event) => {
+  event.preventDefault(); // Evita selezioni o menu contestuali
+  wasLongPress = false; // Reset flag
+
+  if (isTriangle) { // Se c'è un audio registrato
+    pressTimer = setTimeout(() => {
+      wasLongPress = true; // Segna che è stato un long press
+
+      // Chiede conferma per cancellare
+      const confirmDelete = confirm("Vuoi cancellare la registrazione?");
+      if (confirmDelete) {
+        resetButton(); // Cancella la registrazione
+        console.log("Registrazione cancellata.");
+      } else {
+        console.log("Cancellazione annullata.");
+      }
+    }, 1000); // Tempo necessario per considerare il long press
+  }
+});
+
+rec.addEventListener("touchend", () => {
+  clearTimeout(pressTimer); // Annulla il long press se il tocco finisce prima
+  if (isTriangle && !wasLongPress) {
+    playRecording(rec); // Riproduce l'audio registrato
+  }
+});
+
+rec.addEventListener("click", (event) => {
+  if (isDoubleClick || preventNextClick || isCanceling) {
+    event.stopImmediatePropagation();
+    console.log("Click bloccato dopo doppio click o cancellazione.");
+    isCanceling = false;
+    return;
+  }
+
+  if (isTriangle) {
+    playRecording(rec); // Riproduce l'audio registrato
+  }
+});
+
+// Funzione per riprodurre la registrazione
+function playRecording(rec) {
+  if (isDoubleClick || isCanceling) {
+    console.log("Doppio click o cancellazione rilevata, la riproduzione è stata bloccata.");
+    return;
+  }
+
+  const audioUrl = rec.getAttribute("data-audio");
+  if (!audioUrl) {
+    console.log("Nessuna registrazione disponibile.");
+    return;
+  }
+
+  // Se c'è un audio in riproduzione, fermalo e resetta l'icona (ritorna triangolo)
+  if (currentAudio && !currentAudio.paused) {
+    currentAudio.pause();
+    currentAudio.currentTime = 0;
+    currentAudio = null;
+    rec.classList.remove("square");
+    rec.classList.add("triangle");
+    console.log("Audio fermato.");
+    return;
+  }
+
+  // Altrimenti, crea e avvia il nuovo audio e cambia l'icona in quadrato
+  currentAudio = new Audio(audioUrl);
+  rec.classList.remove("triangle");
+  rec.classList.add("square");
+  currentAudio.play();
+  console.log("Riproduzione del messaggio audio:", audioUrl);
+
+  // Quando l'audio termina, ripristina l'icona a triangolo
+  currentAudio.onended = () => {
+    rec.classList.remove("square");
+    rec.classList.add("triangle");
+    currentAudio = null;
+  };
+
+  // Se l'utente interrompe la riproduzione (ad esempio, cliccando nuovamente), 
+  // l'evento onpause viene chiamato: in questo caso, ripristiniamo l'icona.
+  currentAudio.onpause = () => {
+    rec.classList.remove("square");
+    rec.classList.add("triangle");
+  };
+}
+
+
+
+// Funzione per verificare il permesso del microfono
+function checkMicrophonePermission() {
+  return navigator.permissions.query({ name: "microphone" }).then((permissionStatus) => {
+    console.log("Permesso microfono:", permissionStatus.state);
+    return permissionStatus.state === "granted" || permissionStatus.state === "prompt";
+  }).catch((err) => {
+    console.error("Errore durante il controllo dei permessi:", err);
+    return false;
   });
+}
 
-  function checkMicrophonePermission() {
-    return navigator.permissions.query({ name: "microphone" }).then((permissionStatus) => {
-      console.log("Permesso microfono:", permissionStatus.state);
-      return permissionStatus.state === "granted" || permissionStatus.state === "prompt";
-    }).catch((err) => {
-      console.error("Errore durante il controllo dei permessi:", err);
-      return false;
+// Funzione per avviare la registrazione
+function startRecording() {
+  console.log("Tentativo di accesso al microfono...");
+  navigator.mediaDevices.getUserMedia({ audio: true })
+    .then((stream) => {
+      console.log("Accesso al microfono riuscito.");
+      audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const input = audioContext.createMediaStreamSource(stream);
+
+      recorder = new Recorder(input);
+      recorder.record();
+
+      isRecording = true;
+      rec.classList.add("lampeggia");
+      console.log("Registrazione avviata.");
+    })
+    .catch((err) => {
+      console.error("Errore nell'accesso al microfono:", err);
+      alert(`Errore: ${err.name} - ${err.message}`);
     });
-  }
+}
 
-  function startRecording() {
-    console.log("Tentativo di accesso al microfono...");
-    navigator.mediaDevices.getUserMedia({ audio: true })
-      .then((stream) => {
-        console.log("Accesso al microfono riuscito.");
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        const input = audioContext.createMediaStreamSource(stream);
-
-        recorder = new Recorder(input); // Assicurati di avere il file "recorder.js"
-        recorder.record();
-
-        isRecording = true;
-        console.log("Registrazione avviata.");
-      })
-      .catch((err) => {
-        console.error("Errore nell'accesso al microfono:", err);
-        alert(`Errore: ${err.name} - ${err.message}`);
-      });
-  }
-
-  function stopRecording() {
-    if (recorder) {
-      recorder.stop();
-      isRecording = false;
-      isTriangle = true;
-      rec.classList.add("triangle");
-      rec.textContent = "";
-
-      recorder.exportWAV((blob) => {
-        const audioUrl = URL.createObjectURL(blob);
-        const audio = new Audio(audioUrl);
-        audio.play();
-        console.log("Registrazione completata e riprodotta.");
-      });
-
-      console.log("Registrazione interrotta.");
-    }
-  }
-
-  function resetButton() {
+// Funzione per fermare la registrazione
+function stopRecording() {
+  if (recorder) {
+    recorder.stop();
     isRecording = false;
-    isTriangle = false;
-    rec.classList.remove("triangle");
-    rec.textContent = "rec";
-    console.log("Registrazione cancellata.");
+    isTriangle = true;
+    rec.classList.remove("lampeggia");
+    rec.classList.add("triangle");
+    rec.textContent = "";
+
+    recorder.exportWAV((blob) => {
+      const audioUrl = URL.createObjectURL(blob);
+      rec.setAttribute("data-audio", audioUrl);
+      console.log("Registrazione completata.");
+    });
+
+    console.log("Registrazione interrotta.");
   }
+}
+
+// Funzione per resettare il bottone e rimuovere l'audio registrato
+function resetButton() {
+  isRecording = false;
+  isTriangle = false;
+  rec.classList.remove("triangle");
+  rec.classList.add("rec");
+  rec.removeAttribute("data-audio");
+  // Se necessario, qui potresti anche rimuovere o resettare altri eventuali listener
+  console.log("Registrazione cancellata.");
+}
+
+// Funzione per fermare definitivamente l'ascolto di tutti gli audio (se necessario)
+function stopAudio() {
+  const audioElements = document.querySelectorAll("audio");
+  audioElements.forEach(audio => audio.pause());
+}
+
+
 
   /* ----------------------------------------------------------------------------------------------------------------------------- */
 
@@ -531,16 +573,9 @@ function loadNotes() {
   };
 }
 
-
-
-
-
-
 /* -------------------------------------------------------------------------------------------------------------------------------- carica le chat nella lista */
 
 function loadChats() {
-
-
   const transaction = db.transaction(["chats"], "readonly");
   const objectStore = transaction.objectStore("chats");
 
@@ -548,52 +583,47 @@ function loadChats() {
 
   request.onsuccess = function (event) {
     const chats = event.target.result;
-
-    chatList.innerHTML = ""; // Pulisci la lista esistente
+    chatList.innerHTML = ""; // Pulisce la lista esistente
 
     chats.forEach(chat => {
-      const opt = document.createElement("div");
-      opt.classList.add("opt");
-      opt.innerHTML = ` 
-      <button class="opt" data-title="Nome della Canzone" onclick="apriMenu()"><i class="fa-solid fa-ellipsis"></i></button>
-      `;
-
-      // Impedire la propagazione dell'evento di click
-      opt.querySelector(".opt").addEventListener("click", (event) => {
-        event.stopPropagation(); // Fermiamo l'evento, così non si propagherà
-        /* openHomeMenu(); */
-      });
-
-      const foto = document.createElement("div");
-      foto.classList.add("foto");
-      foto.innerHTML = ` 
-<input type="file" id="file-input" class="foto" accept="image/*" onchange="previewImage(event)" />
-      `;
-
-      // Impedire la propagazione dell'evento di click
-      foto.querySelector(".foto").addEventListener("click", (event) => {
-        event.stopPropagation(); // Fermiamo l'evento, così non si propagherà
-        /* openHomeMenu(); */
-      });
-
       const chatItem = document.createElement("div");
       chatItem.classList.add("chat-item");
+      chatItem.addEventListener("click", () => openChat(chat.name));
 
-      // Aggiungi l'HTML con il quadrato e i dettagli
-      chatItem.innerHTML = `
-
-
-        <div style="display: flex; flex-direction: column; left: 85px; position: absolute;">
-          <span>${chat.name}</span>
-          <div class="artist-name">${chat.artist}</div> <!-- Mostra l'artista -->
-        </div>
+      // Creazione del nome della canzone e artista
+      const textContainer = document.createElement("div");
+      textContainer.style.display = "flex";
+      textContainer.style.flexDirection = "column";
+      textContainer.style.left = "85px";
+      textContainer.style.position = "absolute";
+      textContainer.innerHTML = `
+        <span>${chat.name}</span>
+        <div class="artist-name">${chat.artist}</div>
       `;
 
+      // Creazione dei tre puntini (opzioni)
+      const opt = document.createElement("button");
+      opt.classList.add("opt");
+      opt.setAttribute("data-title", chat.name);
+      opt.innerHTML = `<i class="fa-solid fa-ellipsis"></i>`;
+      opt.addEventListener("click", (event) => {
+        event.stopPropagation();
+        apriMenu();
+      });
 
-      // Associa il file input all'elemento chatItem
-      chatItem.appendChild(opt);
+      // Creazione dell'input file (quadrato rosso)
+      const foto = document.createElement("input");
+      foto.type = "file";
+      foto.id = "file-input";
+      foto.classList.add("foto");
+      foto.accept = "image/*";
+      foto.addEventListener("change", previewImage);
+      foto.addEventListener("click", (event) => event.stopPropagation());
+
+      // Appendere gli elementi in ordine
+      chatItem.appendChild(textContainer);
       chatItem.appendChild(foto);
-      chatItem.addEventListener("click", () => openChat(chat.name));
+      chatItem.appendChild(opt);
       chatList.appendChild(chatItem);
     });
   };
@@ -601,154 +631,4 @@ function loadChats() {
   request.onerror = function (event) {
     console.log("Errore nel caricamento delle chat:", event);
   };
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Funzione per salvare una chat nel database
-function saveChat(chat) {
-  const transaction = db.transaction(["chats"], "readwrite");
-  const objectStore = transaction.objectStore("chats");
-
-  const request = objectStore.put(chat);
-
-  request.onsuccess = function () {
-    console.log("Chat salvata con successo");
-  };
-
-  request.onerror = function (event) {
-    console.log("Errore nel salvataggio della chat:", event);
-  };
-}
-
-// Funzione per salvare le note della chat corrente
-function saveNotes() {
-  const notes = [];
-  const noteBlocks = noteContainer.getElementsByClassName("note-block");
-
-  Array.from(noteBlocks).forEach(block => {
-    const noteTitle = block.querySelector(".note-title").textContent.trim();
-    const noteText = block.querySelector(".note-text").textContent.trim();
-
-    if (noteTitle || noteText) {
-      notes.push({ title: noteTitle, text: noteText });
-    }
-  });
-
-  // Aggiornare le note nella chat corrente
-  const transaction = db.transaction(["chats"], "readwrite");
-  const objectStore = transaction.objectStore("chats");
-
-  const request = objectStore.get(currentChatName);
-
-  request.onsuccess = function (event) {
-    const chatData = event.target.result;
-    chatData.notes = notes;
-    objectStore.put(chatData);
-  };
-
-  request.onerror = function (event) {
-    console.log("Errore nel salvataggio delle note:", event);
-  };
-}
-
-/* ------------------------------------------------------------------------------------------------------------------------- */
-
-
-function apriMenu(titoloCanzone) {
-  document.getElementById("songTitle").innerText = titoloCanzone; // Imposta il titolo della canzone
-  document.getElementById("songMenu").classList.add("show"); // Mostra il menu
-  document.getElementById("home-overlay").style.display = "block"; // Mostra l'overlay
-  document.getElementById("home-page").classList.add("blur"); // Applica la classe di opacità
-}
-
-function chiudiMenu() {
-  document.getElementById("songMenu").classList.remove("show"); // Nasconde il menu
-  document.getElementById("home-overlay").style.display = "none"; // Nascondi l'overlay
-  document.getElementById("home-page").classList.remove("blur"); // Rimuovi la classe di opacità
-}
-
-// Funzioni di esempio per i pulsanti
-function azione1() {
-  alert("Azione 1 eseguita!");
-}
-
-function azione2() {
-  alert("Azione 2 eseguita!");
-}
-
-// Aggiungere event listener ai 3 puntini di ogni chat
-document.querySelectorAll(".menu-button").forEach(button => {
-  button.addEventListener("click", function () {
-    const titolo = this.getAttribute("data-title"); // Recupera il titolo della canzone
-    apriMenu(titolo);
-  });
-});
-
-// Chiude il menu se si clicca fuori dal contenuto del menu
-document.addEventListener("click", function (event) {
-  const menu = document.getElementById("songMenu");
-  const menuContent = document.querySelector(".menuSotto-content");
-
-  // Se il menu è aperto e il click non è dentro il menu-content, chiudi il menu
-  if (menu.classList.contains("show") && !menuContent.contains(event.target)) {
-    chiudiMenu();
-  }
-});
-
-
-
-function openFileSelector() {
-  // Apre il selettore di file
-  document.getElementById('file-input').click();
-}
-
-document.getElementById('file-input').addEventListener('change', function (event) {
-  const file = event.target.files[0]; // Prende il file selezionato
-  if (file) {
-    const reader = new FileReader();
-
-    reader.onload = function (e) {
-      // Imposta l'immagine all'interno del quadrato
-      const imgElement = document.getElementById('image');
-      imgElement.src = e.target.result;
-    }
-
-    reader.readAsDataURL(file); // Legge il file come URL
-  }
-});
-
-function previewImage(event) {
-  const file = event.target.files[0]; // Prende il file selezionato
-  const input = event.target;
-  
-  if (file) {
-    const reader = new FileReader();
-
-    reader.onload = function(e) {
-      // Imposta l'immagine selezionata come sfondo dell'input
-      input.style.backgroundImage = `url(${e.target.result})`;
-      input.style.backgroundColor = 'transparent'; // Rimuove il colore di sfondo predefinito
-    }
-
-    reader.readAsDataURL(file); // Legge il file come URL
-  }
 }

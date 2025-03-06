@@ -6,7 +6,7 @@ const deleteAllButton = document.getElementById("delete-all-button");
 
 // Funzione per aprire il menu e applicare l'overlay
 function openHomeMenu() {
-  document.getElementById("right-page").style.transform = "translateX(0)";
+  document.getElementById("right-page").style.transform = "translateY(0)";
   document.getElementById("right-page").style.display = "block";
   document.getElementById("home-overlay").style.display = "block"; // Mostra l'overlay
   document.getElementById("home-page").classList.add("blur"); // Applica la classe di opacità
@@ -15,7 +15,7 @@ function openHomeMenu() {
 
 // Funzione per chiudere il menu e rimuovere l'overlay
 function closeHomeMenu() {
-  document.getElementById("right-page").style.transform = "translateX(100%)";
+  document.getElementById("right-page").style.transform = "translateY(100%)";
   document.getElementById("home-overlay").style.display = "none"; // Nascondi l'overlay
   document.getElementById("home-page").classList.remove("blur"); // Rimuovi la classe di opacità
   document.querySelector(".menu-icon").classList.remove("hidden"); // Mostra l'icona del menu
@@ -30,26 +30,26 @@ function goBackFromSettings() {
   document.getElementById("settings-page").style.display = "none";
   document.getElementById("chat-page").style.display = "flex";
 }
-
+/* 
 function toggleMenu() {
   const menu = document.getElementById("menu");
   const menuIcon = document.getElementById("menu-icon");
 
-  if (menu.style.transform === "translateX(0%)") {
-    menu.style.transform = "translateX(100%)"; // Chiudi il menu
+  if (menu.style.transform === "translateY(0%)") {
+    menu.style.transform = "translateY(50%)"; // Chiudi il menu
     menuIcon.style.display = "block"; // Rendi visibile l'icona del menu
   } else {
-    menu.style.transform = "translateX(0%)"; // Apre il menu
+    menu.style.transform = "translateY(0%)"; // Apre il menu
     menuIcon.style.display = "none"; // Nascondi l'icona del menu
   }
-}
+} */
 
-function closeMenu() {
+/* function closeMenu() {
   const menu = document.getElementById("menu");
   const menuIcon = document.getElementById("menu-icon");
-  menu.style.transform = "translateX(100%)"; // Chiudi il menu
+  menu.style.transform = "translateY(50%)"; // Chiudi il menu
   menuIcon.style.display = "block"; // Rendi visibile l'icona del menu
-}
+} */
 
 
 /* ----------------------------------------------------------------------------------------------------------- tasto crea backup chat */

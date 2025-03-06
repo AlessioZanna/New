@@ -38,7 +38,7 @@ body {
     /* border-bottom: 1px solid #333; */
     border-radius: 15px 15px 0 0;
     overflow: hidden;
-    position: relative;
+    position: fixed;
     /* Impedisce lo scroll fuori dall'app */
     /* align-items: center; */
     /* Centra verticalmente */
@@ -60,6 +60,8 @@ h2 {
     background-color: #141414;
     overflow: hidden;
     /* Impedisce lo scroll fuori dall'app */
+    position: fixed;
+    top: 100px;
 }
 
 .search-bar input {
@@ -98,6 +100,9 @@ h2 {
     gap: 10px;
     /* Spaziatura tra gli elementi */
     height: 500px;
+    position: fixed;
+    top: 170px;
+    left: 21px;
 }
 
 .music-list-container {
@@ -105,7 +110,6 @@ h2 {
 /*     background-color: #1a1a1a; */
     color: white;
     border-radius: 10px;
-    padding: 10px;
     box-sizing: border-box;
     margin-bottom: 15px;
     height: 500px;
@@ -138,7 +142,7 @@ h2 {
 }
 
 .media-player {
-    position: absolute;
+    position: fixed;
     /* Posizione fissa */
     bottom: 40px;
     /* Imposta la distanza dal basso */
@@ -155,7 +159,7 @@ h2 {
     z-index: 10;
     /* Impedisce che venga coperto da altri elementi */
    /*  transition: border-radius 0.2s ease, width 0.1s ease; */
-   transition: left 0.1s ease, width 0.1s ease, border-radius 0.1s ease;
+   transition: left 0s ease, width 0s ease, border-radius 0s ease;
     /* Transizioni per l'effetto */
 }
 

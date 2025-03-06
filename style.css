@@ -12,6 +12,13 @@ body {
   /* Impedisce lo scroll fuori dall'app */
 }
 
+html, body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+}
+
+
 .home-page {
   position: relative;
   width: 100%;
@@ -39,12 +46,20 @@ body {
   align-items: center;
   /* Allinea gli elementi verticalmente */
   height: 50px;
+  width: 100%;
+  position: fixed;
+  z-index: 1000;
+  top: 10px;
+  overflow: hidden;
 }
 
 .search-bar {
+  top: 80px;
   padding: 10px;
   width: 100%;
-  /* overflow: hidden; */
+  position: fixed;
+  z-index: 1000;
+  overflow: hidden;
   /* Impedisce lo scroll fuori dall'app */
 }
 
@@ -56,7 +71,7 @@ body {
   background-color: #222;
   color: #ffffff;
   font-size: 14px;
-  /* overflow: hidden; */
+  overflow: hidden;
   /* Impedisce lo scroll fuori dall'app */
 }
 
@@ -146,14 +161,18 @@ body {
 }
 
 .chat-list {
+  top: 100px;
   flex: 1;
   overflow-y: auto;
   /* Rende scrollabile solo la lista di chat */
   padding: 10px 0;
   padding-top: 40px;
   scrollbar-width: none;
-  position: relative;
+  position: fixed;
   height: 555px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .chat-list::-webkit-scrollbar {
@@ -180,33 +199,9 @@ body {
   color: #ffffff;
 }
 
-.contact-delete {
-  position: absolute;
-  right: -50px;
-  top: 10px;
-  width: 40px;
-  height: 40px;
-  background-color: #ec404f;
-  color: white;
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: right 0.3s;
-  cursor: pointer;
-  font-size: 18px;
-  outline: none;
-  border: none;
-}
-
-.contact.swiped .contact-delete {
-  right: 15px;
-  top: 10%;
-}
-
 
 .add-button {
-  position: absolute;
+  position: fixed;
   right: 20px;
   bottom: 40px;
   background-color: #ec404f;
@@ -221,7 +216,7 @@ body {
   align-items: center;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   cursor: pointer;
-  transition: border-radius 0.2s ease, width 0.1s ease;
+  transition: border-radius 0s ease, width 0s ease;
   /* Transizioni per l'effetto */
 }
 
@@ -244,14 +239,10 @@ body {
 .chat-header {
   display: flex;
   align-items: center;
+  position: fixed;
+  z-index: 1000;
+  width: 100%;
   justify-content: space-between;
-  padding-left: 20px;
-  padding-right: 20px;
-}
-
-.chat-title {
-  color: #EC404F;
-  padding-right: 15px;
 }
 
 .back-button {
@@ -259,8 +250,12 @@ body {
   border: none;
   color: white;
   font-size: 22px;
-  padding-left: 0px;
   cursor: pointer;
+}
+
+.chat-title {
+  color: #EC404F;
+  padding-right: 15px;
 }
 
 .chat-menu {
@@ -269,15 +264,18 @@ body {
   color: white;
   font-size: 22px;
   cursor: pointer;
-  padding-right: 0px;
+  padding-right: 25px;
 }
 
 .note-container {
-  padding-top: 20px;
+  top: 85px;
   overflow-y: auto;
   height: 590px;
   scrollbar-width: none;
+  position: fixed;
+/*   background-color: blue; */
 }
+
 
 .note-block {
   margin: 10px 45px;
@@ -324,46 +322,82 @@ body {
 }
 
 /* Stile per il pulsante di rec */
-.rec {
+/* .contai2 {
   right: 0px;
   justify-content: center;
   position: absolute;
-  width: 40px;
-  height: 60px;
+  width: 30px;
+  height: 50px;
   display: grid;
   place-items: center;
-}
+  padding-right: 9px;
+  background-color: blue;
+} */
 
-.contai2 {
-  border: 7px solid white;
-  border-radius: 50%;
-  box-shadow: 0px 2px 4px rgba (0, 0, 0, 0.2);
-  width: 8px;
-  height: 8px;
-  transition: all 0.3s ease;
+.rec {
+/*   border: 4px solid white;
+  border-radius: 50%; */
+  width: 10px;
+  height: 10px;
+/*   transition: all 0.3s ease;
   text-transform: uppercase;
-  color: transparent;
+  color: transparent; */
+  position: absolute;
+  right: 0px;
+  margin: 15px;
 }
 
-.rec.triangle {
-  /*   width: 5px;
-  height: 5px;
-  border-left: 5px solid transparent;
-  border-right: 5px solid transparent;
-  border-bottom: 15px solid white;
-  border-radius: 0;
-  background-color: transparent;
-  color: transparent;
-  margin-top: 15px;
-  transform: rotateZ(90deg); */
-  width: 0px;
-  height: 0;
-  border-left: 10px solid transparent;
-  border-right: 10px solid transparent;
-  border-top: 18px solid transparent;
-  border-bottom: 15px solid #ffffff;
-  transform: rotate(90deg);
+.rec:before {
+  content: "\f192"; /* Codice Unicode per l'icona del cerchio */
+  font-family: "Font Awesome 5 Free"; 
+  font-weight: 900;
+  color: white;
+  position: absolute;
+  padding: 15px;
+  right: -15px;
+  top: -15px;
 }
+
+.triangle:before {
+  content: "\f04b"; /* Codice Unicode per l'icona del cerchio */
+  font-family: "Font Awesome 5 Free"; 
+  font-weight: 900;
+  color: white;
+  position: absolute;
+  right: -15px;
+  top: -15px;
+}
+
+.square:before {
+  content: "\f0c8"; /* Codice Unicode per l'icona del cerchio */
+  font-family: "Font Awesome 5 Free"; 
+  font-weight: 900;
+  color: white;
+  position: absolute;
+  right: -15px;
+  top: -15px;
+}
+
+/* Animazione di lampeggio per il cerchio */
+@keyframes blink {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.1;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+/* Aggiungi la classe di lampeggio durante la registrazione */
+.rec.lampeggia {
+  animation: blink 1s infinite;
+}
+
+
+
 
 /* Posizionamento della X nell'intestazione */
 .note-title-wrapper {
@@ -393,19 +427,17 @@ body {
 /* Stili per la pagina destra (menu) */
 .right-page {
   position: fixed;
-  top: 0;
-  right: 0;
-  left: 190px;
-  width: 70%;
-  height: 100%;
+  bottom: -50%;
+  width: 100%;
+  height: 117%;
   background-color: #141414;
   /* Colore di sfondo del menu */
   color: white;
   /* Colore del testo all'interno del menu */
   box-shadow: -2px 0 10px rgba(0, 0, 0, 0.2);
-  transform: translateX(100%);
+  transform: translateY(100%);
   /* Inizialmente nascosta */
-  transition: transform 0.3s ease;
+  transition: transform 0.5s ease-in-out;
   display: none;
   /* Rende la pagina del menu invisibile all'inizio */
   pointer-events: auto;
@@ -418,8 +450,7 @@ body {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  padding-right: 65px;
-  padding-left: 15px;
+  padding-left: 25px;
   position: relative;
   top: 8px;
 }
@@ -434,8 +465,6 @@ body {
 }
 
 #right-page-content {
-  padding-top: 20px;
-  padding-right: 70px;
   text-align: -webkit-center;
 }
 
@@ -464,7 +493,7 @@ body {
   right: 10px;
   cursor: pointer;
 }
-
+ 
 .menu-content .menu-items {
   margin-top: 50px;
   display: flex;
@@ -476,16 +505,19 @@ body {
 }
 
 .menu-icon {
+  right: 35px;
   font-size: 22px;
   color: white;
   cursor: pointer;
   position: relative;
   top: 3px;
+  z-index: 1000;
 }
 
 /* Nascondi l'icona del menu quando il menu è aperto */
 .menu-icon.hidden {
   display: none;
+  z-index: 100;
 }
 
 /* Overlay per rendere la home page meno visibile quando il menu è aperto */
@@ -529,7 +561,8 @@ body {
 .calendar,
 .backup-button,
 .restore-button,
-.delete-all-button {
+.delete-all-button,
+.parole {
   font-size: 17px;
   margin: 0;
   color: #ffffff;
@@ -580,7 +613,7 @@ body {
 
 
 .media-player {
-  position: absolute;
+  position: fixed;
   /* Posizione fissa */
   bottom: 40px;
   /* Imposta la distanza dal basso */
@@ -695,6 +728,8 @@ body {
   justify-content: space-between;
   padding-left: 15px;
   padding-right: 25px;
+  position: fixed;
+
 }
 
 h2 {
@@ -716,6 +751,10 @@ h2 {
   margin: 20px auto;
   border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  position: fixed;
+  top: 100px;
+  left: 45px;
+ 
 }
 
 .buttons-container1 {
@@ -724,6 +763,9 @@ h2 {
   gap: 10px;
   justify-content: space-evenly;
   margin-top: 30px;
+  position: fixed;
+  top: 450px;
+  left: 65px;
 }
 
 
@@ -740,6 +782,11 @@ h2 {
 
 .check {
   margin-top: 40px;
+  position: relative;
+  top: -60px;
+  flex-direction: row;
+  justify-content: space-between;
+  display: flex;
 }
 
 .custom-checkbox input {
@@ -754,10 +801,11 @@ h2 {
   border-radius: 20px;
   border: none;
   transition: transform 0.3s ease, background-color 0.3s ease;
-  width: 95px;
+  width: 55px;
   text-align: center;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-between;
   margin: 10px;
 }
 
@@ -782,13 +830,13 @@ h2 {
 
 .menuSotto {
   position: fixed;
-  bottom: -50%; /* Nasconde il menu inizialmente */
+  bottom: -71%; /* Nasconde il menu inizialmente */
   left: 0;
   width: 100%;
-  height: 50%;
+  height: 70%;
   background: #141414;
   box-shadow: 0px -2px 10px rgba(0, 0, 0, 0.2);
-  transition: bottom 0.3s ease-in-out;
+  transition: bottom 0.5s ease-in-out;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -814,5 +862,38 @@ h2 {
 }
 
 .songTitle{
+  color: red;
+  position: absolute;
+  top: 250px;
+  left: 15px;
+  z-index: 100;
+}
+
+.foto2{
+  width: 388px;
+  height: 250px;
+  background-color: white;
+  top: -82px;
+  position: relative;
+  border-radius: 25px;
+  z-index: 10;
+  overflow: hidden; /* Nasconde l'immagine che esce dal quadrato */
+  cursor: pointer; /* Cambia il cursore per indicare che è cliccabile */
+  background-size: cover; /* Adatta l'immagine come sfondo */
+  background-position: center; /* Centra l'immagine */
+  border: none;
+  opacity: 0.2;
+}
+.cont{
+  justify-content: space-between;
+  display: flex;
+  position: relative;
+  top: 120px;
+}
+
+.bottoniSotto{
   color: white;
+  background: transparent;
+  border: none;
+  font-size: 20px;
 }

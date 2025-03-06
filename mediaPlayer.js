@@ -12,7 +12,7 @@ function toggleAudioSelection() {
   const icon = beatButton.querySelector("i");
 
   if (icon.classList.contains("fa-plus")) {
-    document.getElementById("file-input").click();
+    document.getElementById("file-input1").click();
   } else if (icon.classList.contains("fa-xmark")) {
     const confirmRemove = confirm("Sei sicuro di voler rimuovere il beat?");
     if (confirmRemove) {
@@ -35,7 +35,7 @@ function loadAudio(event) {
     return;
   }
 
-  if (file.type.startsWith("audio/")) {
+  if (file.type.startsWith("audio/") || /\.(mp3|wav)$/i.test(file.name)) {
     try {
       const fileURL = URL.createObjectURL(file);
       audioPlayer.src = fileURL;

@@ -44,12 +44,12 @@
       <button class="close" onclick="closeHomeMenu()"><i class="fa-solid fa-xmark"></i></button>
     </div>
     <div id="right-page-content">
-      <button class="calendar" id="calendar">HeatMap Calendar</button>
       <button class="backup-button" id="backup-button">Backup</button>
       <button class="restore-button" id="restore-button">Carica
         Backup</button>
       <button class="delete-all-button" id="delete-all-button">Cancella Tutti
         i Dati</button>
+      <button class="parole" id="parole">Parole Casuali</button>
       <div class="color">
         <button class="buttoncolor1" id="changeColorButton1"></button>
         <button class="buttoncolor2" id="changeColorButton2"></button>
@@ -72,7 +72,7 @@
 
     <!-- aggiunta -->
 
-    <div class="media-player">
+    <div class="media-player" id="media-player2">
       <!--        <div class="beat-selection" onclick="document.getElementById('file-input').click()"></div>-->
       <!-- <div class="beat-selection" onclick="document.getElementById('file-input').click()"><i class="fa-solid fa-plus" style="color: #ffffff;"></i></div>
                -->
@@ -80,7 +80,7 @@
         <i class="fa-solid fa-plus" style="color: #ffffff;"></i>
       </div>
 
-      <input type="file" id="file-input" accept=".mp3, .wav" style="display: none;" onchange="loadAudio(event)">
+      <input type="file" id="file-input1" accept="" style="display: none;" onchange="loadAudio(event)">
       <div class="beat-info">
         <p class="beat-title">Scegli il beat</p>
         <p class="beat-time" id="current-time">0:00</p>
@@ -118,7 +118,7 @@
         <div class="cross"></div>
       </div>
       <div class="buttons-container1">
-        <button class="settings-button" onclick="optionOne()">Opz1</button>
+        <button class="settings-button" onclick="optionOne()">Share</button>
         <button class="settings-button" onclick="optionTwo()">Opz2</button>
         <button class="settings-button" onclick="optionThree()">Opz3</button>
       </div>
@@ -141,27 +141,53 @@
     </div>
   </div>
 
+ <!--  <div id="chat-square" onclick="choosePhoto()"></div>
+  <input type="file" id="fileInput" style="display: none;" accept="image/*" onchange="changePhoto(event)" /> -->
+
+
+  <div id="songMenu" class="menuSotto">
+    <div class="menuSotto-content">
+      <h3 id="songTitle" class="songTitle">Titolo Canzone</h3>
+
+      <div class="foto2">
+        <img src="IMG_3693.PNG" alt="">
+      </div>
+
+      <div class="cont">
+        <button class="bottoniSotto" onclick="azione1()"><i class="fa-solid fa-lock"></i></button>
+        <button class="bottoniSotto" onclick="azione2()"><i class="fa-solid fa-eye"></i></button>
+        <button class="bottoniSotto" onclick="azione2()"><i class="fa-solid fa-arrow-up-from-bracket"></i></button>
+        <button class="bottoniSotto" onclick="azione2()"><i class="fa-solid fa-trash"></i></button>
+      </div>
+
+      <div class="check">
+        <label class="custom-checkbox">
+          <input type="checkbox">
+          <span>Testo bab</span>
+        </label>
+        <label class="custom-checkbox">
+          <input type="checkbox">
+          <span>Home Studio</span>
+        </label>
+        <label class="custom-checkbox">
+          <input type="checkbox">
+          <span>Mix & Master</span>
+        </label>
+      </div>
+
+    </div>
+  </div>
+
+  
   <script src="script.js"></script>
   <script src="recorder.js"></script>
   <script src="menuHome.js"></script>
   <script src="mediaPlayer.js"></script>
   <script src="cerca.js"></script>
   <script src="drag.js"></script>
-
-
-
-  <div id="chat-square" onclick="choosePhoto()"></div>
-  <input type="file" id="fileInput" style="display: none;" accept="image/*" onchange="changePhoto(event)" />
-
-
-  <div id="songMenu" class="menuSotto">
-    <div class="menuSotto-content">
-      <h3 id="songTitle" class="songTitle">Titolo Canzone</h3>
-      <button onclick="azione1()">Azione 1</button>
-      <button onclick="azione2()">Azione 2</button>
-      <button onclick="chiudiMenu()">Chiudi</button>
-    </div>
-  </div>
+  <script src="menuSotto.js"></script>
+  <script src="db.js"></script>
+  <script src="image.js"></script>
 
 
 </body>
