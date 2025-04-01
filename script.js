@@ -213,208 +213,214 @@ function addNoteBlock(title = "Titolo...", text = "Testo...") {
     return closest;
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   /* ----------------------------------------------------------------------------------------------------------------------------- */
-  // Variabile globale per tenere traccia dell'audio in riproduzione
-let currentAudio = null;
-
-// Creazione dell'elemento per la registrazione
-const rec = document.createElement("div");
-rec.classList.add("rec");
-noteBlock.appendChild(rec);
-
-let isRecording = false;
-let isTriangle = false;
-let recorder;
-let audioContext;
-let isDoubleClick = false;
-let preventNextClick = false;
-let isCanceling = false;
-
-const startEvent = "ontouchstart" in window ? "touchstart" : "click";
-
-// Gestione evento di partenza per registrare
-rec.addEventListener(startEvent, () => {
-  if (!isTriangle) {
-    if (!isRecording) {
-      checkMicrophonePermission().then((hasPermission) => {
-        if (hasPermission) {
-          startRecording();
-          rec.classList.add("lampeggia");
-        } else {
-          alert("Devi consentire l'accesso al microfono per registrare.");
+  const DB_NAME = "musicNotesApp2";
+  const STORE_NAME = "audios";
+  let db2;
+  
+  let currentAudio = null;
+  const rec = document.createElement("div");
+  rec.classList.add("rec");
+  noteBlock.appendChild(rec);
+  
+  let isRecording = false;
+  let recorder;
+  let audioContext;
+  
+  const initDB = () => {
+    return new Promise((resolve, reject) => {
+      const request = indexedDB.open(DB_NAME, 1);
+      request.onupgradeneeded = (event) => {
+        db2 = event.target.result;
+        if (!db2.objectStoreNames.contains(STORE_NAME)) {
+          db2.createObjectStore(STORE_NAME, { keyPath: "id", autoIncrement: true });
         }
+      };
+      request.onsuccess = (event) => resolve(event.target.result);
+      request.onerror = (event) => reject("Errore database: " + event.target.errorCode);
+    });
+  };
+  
+  const saveAudio = (audioBlob) => {
+    return new Promise((resolve, reject) => {
+      const transaction = db2.transaction(STORE_NAME, "readwrite");
+      const store = transaction.objectStore(STORE_NAME);
+      store.clear().onsuccess = () => {
+        store.add({ audio: audioBlob, timestamp: new Date() })
+          .onsuccess = (e) => resolve(e.target.result);
+      };
+    });
+  };
+  
+  const loadAudios = () => {
+    return new Promise((resolve) => {
+      const transaction = db2.transaction(STORE_NAME, "readonly");
+      const store = transaction.objectStore(STORE_NAME);
+      store.getAll().onsuccess = (e) => resolve(e.target.result);
+    });
+  };
+  
+  const deleteAudio = (id) => {
+    return new Promise((resolve) => {
+      const transaction = db2.transaction(STORE_NAME, "readwrite");
+      transaction.objectStore(STORE_NAME).delete(id).onsuccess = () => resolve();
+    });
+  };
+  
+  const startEvent = "ontouchstart" in window ? "touchstart" : "click";
+  
+  (async function initApp() {
+    try {
+      db2 = await initDB();
+      const audios = await loadAudios();
+      if (audios.length > 0) {
+        const lastAudio = audios[audios.length - 1];
+        const audioUrl = URL.createObjectURL(new Blob([lastAudio.audio], { type: 'audio/wav' }));
+        rec.setAttribute("data-audio", audioUrl);
+        rec.setAttribute("data-id", lastAudio.id);
+      }
+    } catch (error) {
+      console.error("Errore inizializzazione:", error);
+    }
+  })();
+  
+  // Registrazione
+  rec.addEventListener(startEvent, (event) => {
+    if (rec.getAttribute("data-audio")) return;
+    event.cancelable && event.preventDefault();
+    
+    !isRecording ? checkMicrophonePermission().then(has => has && startRecording())
+                : stopRecording();
+  });
+  
+  // Gestione touch
+  let pressTimer, wasLongPress = false;
+  
+  rec.addEventListener("touchstart", (event) => {
+    if (!rec.getAttribute("data-audio")) {
+      event.cancelable && event.preventDefault();
+      return;
+    }
+    pressTimer = setTimeout(() => {
+      confirm("Cancellare la registrazione?") && resetButton();
+      wasLongPress = true;
+    }, 1000);
+  });
+  
+  rec.addEventListener("touchend", (event) => {
+    clearTimeout(pressTimer);
+    if (!rec.getAttribute("data-audio") || isRecording) return;
+    
+    event.preventDefault();
+    setTimeout(() => wasLongPress = false, 100);
+    
+    if (!wasLongPress) playRecording(rec);
+  });
+  
+  // Gestione desktop
+  rec.addEventListener("click", (event) => {
+    if ('ontouchstart' in window || !rec.getAttribute("data-audio") || isRecording) return;
+    playRecording(rec);
+  });
+  
+  function playRecording(rec) {
+    if (currentAudio && !currentAudio.paused) {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+      rec.classList.remove("playing");
+      return;
+    }
+    
+    currentAudio = new Audio(rec.getAttribute("data-audio"));
+    currentAudio.play();
+    currentAudio.onended = () => rec.classList.remove("playing");
+    rec.classList.add("playing");
+  }
+  
+  // Resto delle funzioni rimane invariato
+  function checkMicrophonePermission() {
+    return navigator.permissions.query({ name: "microphone" })
+      .then(permission => permission.state === "granted" || permission.state === "prompt")
+      .catch(() => false);
+  }
+  
+  function startRecording() {
+    navigator.mediaDevices.getUserMedia({ audio: true })
+      .then(stream => {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        recorder = new Recorder(audioContext.createMediaStreamSource(stream));
+        recorder.record();
+        isRecording = true;
+        rec.classList.add("lampeggia");
+      })
+      .catch(err => alert(`Errore microfono: ${err.message}`));
+  }
+  
+  function stopRecording() {
+    if (recorder) {
+      recorder.stop();
+      isRecording = false;
+      rec.classList.remove("lampeggia");
+      recorder.exportWAV(async blob => {
+        try {
+          await initDB();
+          const audioId = await saveAudio(blob);
+          const audioUrl = URL.createObjectURL(blob);
+          rec.setAttribute("data-audio", audioUrl);
+          rec.setAttribute("data-id", audioId);
+        } catch (error) { console.error("Salvataggio fallito:", error); }
       });
-    } else {
-      stopRecording();
     }
   }
-});
-
-// Gestione del doppio click / long press per cancellare la registrazione
-let pressTimer;
-let wasLongPress = false; // Flag per sapere se è stato un long press
-
-rec.addEventListener("touchstart", (event) => {
-  event.preventDefault(); // Evita selezioni o menu contestuali
-  wasLongPress = false; // Reset flag
-
-  if (isTriangle) { // Se c'è un audio registrato
-    pressTimer = setTimeout(() => {
-      wasLongPress = true; // Segna che è stato un long press
-
-      // Chiede conferma per cancellare
-      const confirmDelete = confirm("Vuoi cancellare la registrazione?");
-      if (confirmDelete) {
-        resetButton(); // Cancella la registrazione
-        console.log("Registrazione cancellata.");
-      } else {
-        console.log("Cancellazione annullata.");
-      }
-    }, 1000); // Tempo necessario per considerare il long press
+  
+  async function resetButton() {
+    const audioId = rec.getAttribute("data-id");
+    if (audioId) {
+      await deleteAudio(Number(audioId));
+      URL.revokeObjectURL(rec.getAttribute("data-audio"));
+      rec.removeAttribute("data-audio");
+      rec.removeAttribute("data-id");
+    }
+    isRecording && (recorder.stop(), isRecording = false, rec.classList.remove("lampeggia"));
   }
-});
-
-rec.addEventListener("touchend", () => {
-  clearTimeout(pressTimer); // Annulla il long press se il tocco finisce prima
-  if (isTriangle && !wasLongPress) {
-    playRecording(rec); // Riproduce l'audio registrato
+  
+  function stopAudio() {
+    document.querySelectorAll("audio").forEach(audio => audio.pause());
   }
-});
-
-rec.addEventListener("click", (event) => {
-  if (isDoubleClick || preventNextClick || isCanceling) {
-    event.stopImmediatePropagation();
-    console.log("Click bloccato dopo doppio click o cancellazione.");
-    isCanceling = false;
-    return;
-  }
-
-  if (isTriangle) {
-    playRecording(rec); // Riproduce l'audio registrato
-  }
-});
-
-// Funzione per riprodurre la registrazione
-function playRecording(rec) {
-  if (isDoubleClick || isCanceling) {
-    console.log("Doppio click o cancellazione rilevata, la riproduzione è stata bloccata.");
-    return;
-  }
-
-  const audioUrl = rec.getAttribute("data-audio");
-  if (!audioUrl) {
-    console.log("Nessuna registrazione disponibile.");
-    return;
-  }
-
-  // Se c'è un audio in riproduzione, fermalo e resetta l'icona (ritorna triangolo)
-  if (currentAudio && !currentAudio.paused) {
-    currentAudio.pause();
-    currentAudio.currentTime = 0;
-    currentAudio = null;
-    rec.classList.remove("square");
-    rec.classList.add("triangle");
-    console.log("Audio fermato.");
-    return;
-  }
-
-  // Altrimenti, crea e avvia il nuovo audio e cambia l'icona in quadrato
-  currentAudio = new Audio(audioUrl);
-  rec.classList.remove("triangle");
-  rec.classList.add("square");
-  currentAudio.play();
-  console.log("Riproduzione del messaggio audio:", audioUrl);
-
-  // Quando l'audio termina, ripristina l'icona a triangolo
-  currentAudio.onended = () => {
-    rec.classList.remove("square");
-    rec.classList.add("triangle");
-    currentAudio = null;
-  };
-
-  // Se l'utente interrompe la riproduzione (ad esempio, cliccando nuovamente), 
-  // l'evento onpause viene chiamato: in questo caso, ripristiniamo l'icona.
-  currentAudio.onpause = () => {
-    rec.classList.remove("square");
-    rec.classList.add("triangle");
-  };
-}
-
-
-
-// Funzione per verificare il permesso del microfono
-function checkMicrophonePermission() {
-  return navigator.permissions.query({ name: "microphone" }).then((permissionStatus) => {
-    console.log("Permesso microfono:", permissionStatus.state);
-    return permissionStatus.state === "granted" || permissionStatus.state === "prompt";
-  }).catch((err) => {
-    console.error("Errore durante il controllo dei permessi:", err);
-    return false;
-  });
-}
-
-// Funzione per avviare la registrazione
-function startRecording() {
-  console.log("Tentativo di accesso al microfono...");
-  navigator.mediaDevices.getUserMedia({ audio: true })
-    .then((stream) => {
-      console.log("Accesso al microfono riuscito.");
-      audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      const input = audioContext.createMediaStreamSource(stream);
-
-      recorder = new Recorder(input);
-      recorder.record();
-
-      isRecording = true;
-      rec.classList.add("lampeggia");
-      console.log("Registrazione avviata.");
-    })
-    .catch((err) => {
-      console.error("Errore nell'accesso al microfono:", err);
-      alert(`Errore: ${err.name} - ${err.message}`);
-    });
-}
-
-// Funzione per fermare la registrazione
-function stopRecording() {
-  if (recorder) {
-    recorder.stop();
-    isRecording = false;
-    isTriangle = true;
-    rec.classList.remove("lampeggia");
-    rec.classList.add("triangle");
-    rec.textContent = "";
-
-    recorder.exportWAV((blob) => {
-      const audioUrl = URL.createObjectURL(blob);
-      rec.setAttribute("data-audio", audioUrl);
-      console.log("Registrazione completata.");
-    });
-
-    console.log("Registrazione interrotta.");
-  }
-}
-
-// Funzione per resettare il bottone e rimuovere l'audio registrato
-function resetButton() {
-  isRecording = false;
-  isTriangle = false;
-  rec.classList.remove("triangle");
-  rec.classList.add("rec");
-  rec.removeAttribute("data-audio");
-  // Se necessario, qui potresti anche rimuovere o resettare altri eventuali listener
-  console.log("Registrazione cancellata.");
-}
-
-// Funzione per fermare definitivamente l'ascolto di tutti gli audio (se necessario)
-function stopAudio() {
-  const audioElements = document.querySelectorAll("audio");
-  audioElements.forEach(audio => audio.pause());
-}
-
-
 
   /* ----------------------------------------------------------------------------------------------------------------------------- */
+
+
+
+
+
+
+
+
+
+
+
+
 
   // Aggiungere il pulsante di cancellazione (X)
   const deleteButton = document.createElement("button");

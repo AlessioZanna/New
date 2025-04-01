@@ -93,7 +93,7 @@ html, body {
   display: flex;
   align-items: center;
   justify-content: center;
-
+  font-size: 0px;
   border-radius: 10px;
   position: relative;
   overflow: hidden; /* Nasconde l'immagine che esce dal quadrato */
