@@ -52,6 +52,7 @@ function toggleMenu() {
 } */
 
 
+
 /* ----------------------------------------------------------------------------------------------------------- tasto crea backup chat */
 backupButton.addEventListener("click", () => {
     const transaction = db.transaction(["chats"], "readonly");

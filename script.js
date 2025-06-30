@@ -36,10 +36,10 @@ backButton.addEventListener("click", () => {
 
 // Aggiungere una nuova chat
 addChatButton.addEventListener("click", () => {
-  const chatName = prompt("Inserisci il nome della chat:");
+  const chatName = prompt("Titolo:");
   if (!chatName) return; // Interrompe l'esecuzione se il nome della chat non è stato inserito
 
-  const artistName = prompt("Di chi è la canzone:");
+  const artistName = prompt("Info:");
   if (!artistName) return; // Interrompe l'esecuzione se il nome dell'artista non è stato inserito
 
   // Creazione dell'elemento chat
@@ -68,10 +68,11 @@ addChatButton.addEventListener("click", () => {
   opt.style.position = "absolute";
   opt.style.right = "0px";
   opt.style.top = "50%";
+  opt.style.fontSize = "20px";
   opt.style.transform = "translateY(-50%)";
   opt.addEventListener("click", (event) => {
     event.stopPropagation();
-    apriMenu();
+    apriMenu(event.currentTarget);
   });
 
   // Creazione dell'input file (quadrato rosso)
@@ -612,9 +613,10 @@ function loadChats() {
       opt.classList.add("opt");
       opt.setAttribute("data-title", chat.name);
       opt.innerHTML = `<i class="fa-solid fa-ellipsis"></i>`;
+      opt.style.fontSize = "20px";
       opt.addEventListener("click", (event) => {
         event.stopPropagation();
-        apriMenu();
+        apriMenu(event.currentTarget);
       });
 
       // Creazione dell'input file (quadrato rosso)
