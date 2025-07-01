@@ -98,7 +98,7 @@ addChatButton.addEventListener("click", () => {
   const newChat = {
     name: chatName,
     artist: artistName,
-    notes: [{ title: "Titolo iniziale", text: "Testo iniziale" }]
+    notes: [{ title: "Sezione", text: "Testo" }]
   };
 
   saveChat(newChat);
@@ -106,7 +106,7 @@ addChatButton.addEventListener("click", () => {
 });
 
 // Aggiungere un nuovo blocco di note
-function addNoteBlock(title = "Titolo...", text = "Testo...") {
+function addNoteBlock(title = "Sezione", text = "Testo") {
   const noteBlock = document.createElement("div"); // Creiamo un nuovo blocco di nota
   noteBlock.classList.add("note-block"); // Aggiungiamo la classe per il blocco di nota
 
@@ -440,8 +440,8 @@ function addNoteBlock(title = "Titolo...", text = "Testo...") {
       if (confirm("Non puoi eliminare l'unica nota. Vuoi svuotarla e ripristinare i placeholder?")) {
         const noteTitle = noteBlock.querySelector(".note-title");
         const noteText = noteBlock.querySelector(".note-text");
-        noteTitle.textContent = "Titolo...";
-        noteText.textContent = "Testo...";
+        noteTitle.textContent = "Sezione";
+        noteText.textContent = "Testo";
         saveNotes();
       }
     }
@@ -498,47 +498,47 @@ function addNoteBlock(title = "Titolo...", text = "Testo...") {
 
   // Gestire il placeholder per noteTitle
   noteTitle.addEventListener("focus", () => {
-    if (noteTitle.textContent === "Titolo...") {
+    if (noteTitle.textContent === "Sezione") {
       noteTitle.textContent = "";
     }
   });
 
   // Gestire il placeholder per noteText
   noteText.addEventListener("focus", () => {
-    if (noteText.textContent === "Testo...") {
+    if (noteText.textContent === "Testo") {
       noteText.textContent = "";
     }
   });
 
   noteText.addEventListener("blur", () => {
     if (noteText.textContent.trim() === "") {
-      noteText.textContent = "Testo...";
+      noteText.textContent = "Testo";
     }
   });
 
   // Gestione del placeholder per il paragrafo di default
-  if (noteTitle.textContent === "Titolo iniziale") {
+  if (noteTitle.textContent === "Sezione") {
     noteTitle.addEventListener("focus", () => {
-      if (noteTitle.textContent === "Titolo iniziale") {
+      if (noteTitle.textContent === "Sezione") {
         noteTitle.textContent = "";
       }
     });
     noteTitle.addEventListener("blur", () => {
       if (noteTitle.textContent.trim() === "") {
-        noteTitle.textContent = "Titolo iniziale";
+        noteTitle.textContent = "Sezione";
       }
     });
   }
 
-  if (noteText.textContent === "Testo iniziale") {
+  if (noteText.textContent === "Testo") {
     noteText.addEventListener("focus", () => {
-      if (noteText.textContent === "Testo iniziale") {
+      if (noteText.textContent === "Testo") {
         noteText.textContent = "";
       }
     });
     noteText.addEventListener("blur", () => {
       if (noteText.textContent.trim() === "") {
-        noteText.textContent = "Testo iniziale";
+        noteText.textContent = "Testo";
       }
     });
   }
@@ -570,7 +570,7 @@ function loadNotes() {
     if (chatData) {
       chatData.notes.forEach(note => addNoteBlock(note.title, note.text));
     } else {
-      addNoteBlock("Titolo iniziale", "Testo iniziale");
+      addNoteBlock("Sezione", "Testo");
       saveNotes();
     }
   };

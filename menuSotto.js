@@ -69,8 +69,8 @@ closeButton.addEventListener("click", (e) => {
   const titleSpan = parent.querySelector("span");
   const artistSpan = parent.querySelector(".artist-name");
 
-  const newName = prompt("Inserisci il nuovo nome della chat:", titleSpan?.textContent || oldName);
-  const newArtist = prompt("Inserisci il nuovo nome dell'artista:", artistSpan?.textContent || "");
+  const newName = prompt("Nuovo titolo:", titleSpan?.textContent || oldName);
+  const newArtist = prompt("Info:", artistSpan?.textContent || "");
 
   if (newName && newArtist && (newName !== oldName || newArtist !== artistSpan?.textContent)) {
     // Aggiorna visivamente
